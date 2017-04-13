@@ -9,6 +9,8 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(express.static('dist'))
+
 app.use( bodyParser.json() );  
 
 app.use(function(req, res, next) {
