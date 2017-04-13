@@ -9,7 +9,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(express.static('dist'))
+app.use('/public', express.static(path.join(__dirname + 'dist'));
 
 app.use( bodyParser.json() );  
 
