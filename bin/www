@@ -5,6 +5,8 @@
  */
 
 var app = require('../app');
+var fs = require('fs');
+var path = require('path');
 var debug = require('debug')('tasksrest:server');
 var http = require('http');
 
@@ -20,6 +22,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require('socket.io')(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -29,6 +32,75 @@ server.listen(port);
 console.log('Listening on ' + port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+/**
+ * Socket IO
+ */
+
+io.on('connection', function(socket) {
+  let dbPath = path.resolve('routes/db/tasks.json');
+  let backupPath = path.resolve('routes/db/backup.json');
+
+  function writeJob (currentTasks) {
+    fs.truncate(dbPath, 0, () => {
+      fs.writeFile(dbPath, JSON.stringify(currentTasks), (err) => {
+        if (err) return console.log(err);
+      });
+    });
+
+    if (Object.keys(currentTasks).length !== 0 && currentTasks.constructor === Object) {
+      fs.truncate(backupPath, 0, () => {
+        fs.writeFile(backupPath, JSON.stringify(currentTasks), (err) => {
+          if (err) return console.log(err);
+        });
+      });
+    };
+  }
+
+  function writeTasks (tasks) {
+    io.emit('updateTasks', tasks);
+
+    writeJob(tasks);
+
+  }
+
+  socket.on('removeTask', function ({ parentId, targetId }) {
+    let tasks = require('../routes/db/tasks.json');
+    
+    tasks[parentId].forEach((item, index) => {
+        if (item.id === targetId) {
+            tasks[parentId].splice(index, 1);
+        };
+    });
+
+    writeTasks(tasks);
+
+  });
+
+  socket.on('addTask', function ({ id, name, description, state }) {
+    let tasks = require('../routes/db/tasks.json');
+    let entryList = tasks['todoList'];
+
+    if (state != '') {
+        entryList.push({ id, name, description, state });
+    } else {
+        entryList.push({ id, name, description });
+    }
+    tasks['todoList'] = entryList;
+
+    writeTasks(tasks);
+
+  });
+
+  socket.on('updateTasks', function (tasks = null) {
+    if (tasks != null) {
+      writeTasks(tasks);
+    } else {
+      io.emit('updateTasks', require('../routes/db/tasks.json'));
+    }
+  });
+
+});
 
 /**
  * Normalize a port into a number, string, or false.
@@ -88,4 +160,6 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  console.log('API available on: /api/tasks');
+  console.log('Socket connection available on: https://localhost:3333');
 }

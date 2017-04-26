@@ -10,6 +10,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use('/public', express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, '/node_modules')));
 
 app.use( bodyParser.json() );  
 
