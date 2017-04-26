@@ -45,6 +45,9 @@ io.on('connection', function(socket) {
     let backupPath = path.resolve('routes/db/backup.json');
 
     io.emit('updateTasks', tasks);
+    
+    console.log(tasks);
+    console.log('   ');
 
     fs.truncate(dbPath, 0, () => {
       fs.writeFile(dbPath, JSON.stringify(tasks), (err) => {
