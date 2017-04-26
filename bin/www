@@ -38,29 +38,27 @@ server.on('listening', onListening);
  */
 
 io.on('connection', function(socket) {
-  let dbPath = path.resolve('routes/db/tasks.json');
-  let backupPath = path.resolve('routes/db/backup.json');
 
-  function writeJob (currentTasks) {
+  function writeTasks (tasks) {
+
+    let dbPath = path.resolve('routes/db/tasks.json');
+    let backupPath = path.resolve('routes/db/backup.json');
+
+    io.emit('updateTasks', tasks);
+
     fs.truncate(dbPath, 0, () => {
-      fs.writeFile(dbPath, JSON.stringify(currentTasks), (err) => {
+      fs.writeFile(dbPath, JSON.stringify(tasks), (err) => {
         if (err) return console.log(err);
       });
     });
 
-    if (Object.keys(currentTasks).length !== 0 && currentTasks.constructor === Object) {
+    if (Object.keys(tasks).length !== 0 && tasks.constructor === Object) {
       fs.truncate(backupPath, 0, () => {
-        fs.writeFile(backupPath, JSON.stringify(currentTasks), (err) => {
+        fs.writeFile(backupPath, JSON.stringify(tasks), (err) => {
           if (err) return console.log(err);
         });
       });
     };
-  }
-
-  function writeTasks (tasks) {
-    io.emit('updateTasks', tasks);
-
-    writeJob(tasks);
 
   }
 
