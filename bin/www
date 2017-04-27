@@ -46,9 +46,6 @@ io.on('connection', function(socket) {
     let dbPath = path.resolve('routes/db/tasks.json');
     let backupPath = path.resolve('routes/db/backup.json');
 
-    dbTasks = tasks;
-  
-
     fs.truncate(dbPath, 0, () => {
       fs.writeFile(dbPath, JSON.stringify(tasks), (err) => {
         if (err) return console.log(err);
@@ -64,6 +61,8 @@ io.on('connection', function(socket) {
       });
     };
 
+    io.emit('updateTasks', tasks);
+
   }
 
   socket.on('removeTask', function ({ parentId, targetId }) {
@@ -75,7 +74,9 @@ io.on('connection', function(socket) {
         };
     });
 
-    writeTasks(tasks);
+    dbTasks = tasks;
+
+    writeTasks(dbTasks);
 
   });
 
@@ -90,7 +91,9 @@ io.on('connection', function(socket) {
     }
     tasks['todoList'] = entryList;
 
-    writeTasks(tasks);
+    dbTasks = tasks;
+
+    writeTasks(dbTasks);
 
   });
 
