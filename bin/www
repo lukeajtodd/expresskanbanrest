@@ -80,15 +80,12 @@ io.on('connection', function(socket) {
 
   });
 
-  socket.on('addTask', function ({ id, name, description, state }) {
+  socket.on('addTask', function ({ id, name, description, type }) {
     let tasks = dbTasks;
     let entryList = tasks['todoList'];
 
-    if (state != '') {
-        entryList.push({ id, name, description, state });
-    } else {
-        entryList.push({ id, name, description });
-    }
+    entryList.push({ id, name, description, type });
+
     tasks['todoList'] = entryList;
 
     dbTasks = tasks;
