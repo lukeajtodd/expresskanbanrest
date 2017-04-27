@@ -80,6 +80,25 @@ io.on('connection', function(socket) {
 
   });
 
+  socket.on('editTask', function ({ parentId, id, name, description }) {
+    let tasks = dbTasks;
+    let targetList = tasks[parentId];
+
+    targetList.forEach((item, index) => {
+      if (id == item.id) {
+        item.name = name;
+        item.description = description;
+      }
+    })
+
+    tasks[parentId] = targetList;
+
+    dbTasks = tasks;
+
+    writeTasks(dbTasks);
+
+  });
+
   socket.on('addTask', function ({ id, name, description, type }) {
     let tasks = dbTasks;
     let entryList = tasks['todoList'];
