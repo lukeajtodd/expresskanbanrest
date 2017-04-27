@@ -39,19 +39,18 @@ server.on('listening', onListening);
 
 io.on('connection', function(socket) {
 
+  var dbTasks;
+
   function writeTasks (tasks) {
 
     let dbPath = path.resolve('routes/db/tasks.json');
     let backupPath = path.resolve('routes/db/backup.json');
-
-    io.emit('updateTasks', tasks);
-    
-    console.log(tasks);
-    console.log('   ');
+  
 
     fs.truncate(dbPath, 0, () => {
       fs.writeFile(dbPath, JSON.stringify(tasks), (err) => {
         if (err) return console.log(err);
+        io.emit('updateTasks', tasks);
       });
     });
 
@@ -66,7 +65,7 @@ io.on('connection', function(socket) {
   }
 
   socket.on('removeTask', function ({ parentId, targetId }) {
-    let tasks = require('../routes/db/tasks.json');
+    let tasks = dbTasks;
     
     tasks[parentId].forEach((item, index) => {
         if (item.id === targetId) {
@@ -79,7 +78,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('addTask', function ({ id, name, description, state }) {
-    let tasks = require('../routes/db/tasks.json');
+    let tasks = dbTasks;
     let entryList = tasks['todoList'];
 
     if (state != '') {
@@ -95,9 +94,10 @@ io.on('connection', function(socket) {
 
   socket.on('updateTasks', function (tasks = null) {
     if (tasks != null) {
-      writeTasks(tasks);
+      dbTasks = tasks;
+      writeTasks(dbTasks);
     } else {
-      io.emit('updateTasks', require('../routes/db/tasks.json'));
+      io.emit('updateTasks', dbTasks);
     }
   });
 
