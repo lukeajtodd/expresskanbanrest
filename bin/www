@@ -77,6 +77,7 @@ io.on('connection', function(socket) {
     dbTasks = tasks;
 
     writeTasks(dbTasks);
+    io.emit('hideOverlay', false);
 
   });
 
@@ -120,6 +121,15 @@ io.on('connection', function(socket) {
     } else {
       io.emit('updateTasks', dbTasks);
     }
+  });
+
+  socket.on('clear', function () {
+    let schemaJSON = JSON.parse(fs.readFileSync('routes/db/schema.json'));
+
+    dbTasks = schemaJSON;
+
+    writeTasks(dbTasks);
+    io.emit('hideOverlay', false);
   });
 
 });
