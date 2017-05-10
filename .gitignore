@@ -1,2 +1,3 @@
 node_modules
-routes/db/
+routes/db/tasks.json
+routes/db/backup.json
